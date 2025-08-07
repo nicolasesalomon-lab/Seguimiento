@@ -1,0 +1,105 @@
+## Prompt para Codex
+
+### Contexto
+
+Tenemos un archivo Excel denominado **“RESUMEN CBU GOLDMUND.xlsx”** que hoy usamos como planilla maestra para seguir el avance de *todos* los proyectos de producto de la compañía. Consta de varias hojas (pestañas), cada una correspondiente a un *pipeline* distinto:
+
+| Hoja                                                     | Propósito                                                         |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| **EN DESARROLLO**                                        | Productos nuevos, aún sin lanzar.                                 |
+| **EXTENSIONES**                                          | Extensiones de gama o bundles sobre productos ya lanzados.        |
+| **URUGUAY / PARAGUAY / BRASIL / MÉXICO / EEUU / EUROPA** | Adaptaciones para cada mercado.                                   |
+| **DINÁMICA GM / DINÁMICA EXTENSIONES**                   | Vistas filtradas que usamos como *dashboards* semanales.          |
+| **LANZADOS**                                             | Productos ya comercializados.                                     |
+| **REFERENCIA**                                           | Parámetros de referencia (plazos reglamentarios, leyendas, etc.). |
+
+Cada fila representa un **proyecto** (un modelo de producto) y contiene, entre otras, las siguientes columnas principales:
+
+* `grupo` (agrupador lógico; p.e.: *00 – Dipromás*, *1034 – F*…)
+* `modelo` (código interno; ej.: *PE‑CT4205*)
+* `marca`
+* `proveedor`
+* `producto` (descripción corta)
+* `detalles` (SKU, color, bundle, etc.)
+* `estado_muestra` (cantidad, origen, fecha llegada, validación)
+* `ingenieria_owner` (responsable interno)
+* `certificacion_se`, `certificacion_ee`, `ensayo_ruido` (boolean + fecha + comentario)
+* `comentario_certificacion`
+* `comentario_artes` (diseño gráfico)
+* `etd_comercial` (ETA/ETD confirmada)
+
+> ⚠️ Los nombres exactos de las columnas en Excel no son consistentes (muchas celdas combinadas). Usa los *aliases* legibles de arriba como **fields canon**.
+
+### Objetivo
+
+Construir una **aplicación web full‑stack**, **bonita**, **intuitiva** y **fácil de mantener**, que reemplace la planilla y permita:
+
+1. **Cargar** (manual o import XLSX) y **editar** proyectos.
+2. **Visualizar** la información mediante:
+
+   * Tabla filtrable + ordenable (tipo DataGrid) con *views* predefinidas que imiten las hojas actuales.
+   * Tarjetas Kanban (etapas: *Idea → Muestra → Validación → Certificación → Compra → Lanzado*).
+   * Mini *Gantt* o timeline para fechas clave (muestra, certificación, ETD).
+3. **Alertas y SLA**:
+
+   * Vencer en ⚠️ 15 días (amarillo) / ⚠️ 30 días (rojo) según reglas de la hoja **REFERENCIA**.
+   * Correos
+     otificaciones internas.
+4. **Control de permisos**: rol *admin*, *ingeniería*, *marketing*, y *solo‑lectura*.
+5. **Adjuntar** archivos por proyecto (informes de ensayo, artes, manuales PDF…) y preview inline.
+6. **Internacionalización**: español 🇪🇸 por defecto, inglés opcional.
+7. **CI/CD** con Docker y docker‑compose (backend, frontend, db, nginx).
+
+### Alcance técnico deseado
+
+* **Backend**: Python 3.12 + **FastAPI** (o Flask si lo prefieres) con Pydantic models y JWT auth.
+* **Base de datos**: PostgreSQL 16.  Diagramar tablas `projects`, `stages`, `attachments`, `users`, `comments`, `audit_log`.
+* **Migrations**: Alembic.
+* **Frontend**: **React 18** + Vite + **MUI v5** (Material UI) con theme corporativo (primario #2953A4, secundario #FFC433).
+* **State**: TanStack Query.  CRUD vía REST, Forms con React Hook Form + Zod.
+* **Styling**: Responsive (mobile‑first), dark/light switch.
+* **Excel import/export**: backend endpoint `/import/xlsx` y `/export/xlsx`.  Usar `pandas` + `openpyxl`.
+* **Testing**: pytest + React Testing Library.
+* **Lint/Format**: black, isort, flake8 / eslint, prettier.
+
+### Entregables que debe generar Codex
+
+1. **Estructura** de carpetas lista para ejecutar `docker compose up`.
+2. Archivos clave:
+
+   * `backend/app/main.py` (FastAPI)
+   * `backend/app/models.py`, `schemas.py`, `crud.py`, `routers/projects.py`.
+   * `frontend/src/App.tsx`, `routes.tsx`, `pages/ProjectsPage.tsx`, `components/ProjectTable.tsx`, etc.
+   * `docker-compose.yml`, `Dockerfile.backend`, `Dockerfile.frontend`, `nginx.conf`.
+3. **Scripts**:
+
+   * `scripts/init_db.py` con datos de ejemplo.
+   * `scripts/import_excel.py` para actualización masiva.
+4. **README.md** con instrucciones paso a paso 👩🏻‍💻.
+
+### Buenas prácticas UI/UX
+
+* Encabezado fijo con búsqueda global *fuzzy*.
+* Breadcrumbs mostrando hoja de origen.
+* Colores semáforo para deadlines.
+* Rich‑text comments con @mention y drag & drop de adjuntos.
+* Accesibilidad: roles ARIA, contraste AA.
+
+### Bonus (nice‑to‑have)
+
+* Endpoint `/metrics` (Prometheus) + panel Grafana.
+* Web‑socket (FastAPI Websockets) para actualizaciones en tiempo real.
+* Docker Swarm stack file para despliegue productivo.
+
+---
+
+**Instrucciones a Codex**
+
+1. Genera **todo el boilerplate** completo, no solo piezas sueltas.
+2. Maximiza la *claridad* y *comentarios* en el código.
+3. No escatimes en *tests* de ejemplo.
+4. Usa **TypeScript** en el front.
+5. Toda la UI y variables de texto deben estar extraídas a un archivo `i18n.ts`.
+6. Garantiza que el *build* pase `docker compose up` sin pasos manuales.
+
+> «¡Listo para compilar y desplegar en menos de 5 minutos!»
